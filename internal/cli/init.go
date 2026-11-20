@@ -1,7 +1,7 @@
 package cli
 
 import (
-	"vault-go/utils"
+	"vault-go/internal/config"
 
 	"github.com/spf13/cobra"
 )
@@ -11,7 +11,13 @@ var initCmd = &cobra.Command{
 	Short: "short description for init",
 	Long:  "long description for init",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return utils.BackupFolderSetup()
+		version, err := config.BackupFolderSetup()
+		if err != nil {
+			return err
+		}
+
+		rootCmd.Version = version
+		return nil
 	},
 }
 
