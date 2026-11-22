@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"vault-go/internal/config"
 
 	"github.com/spf13/cobra"
 )
@@ -14,6 +15,12 @@ var backupCmd = &cobra.Command{
 		if len(args) == 0 {
 			return fmt.Errorf("expected backup folder, received none")
 		}
+
+		bFolder := args[0]
+		if err := config.BackupProcess(bFolder); err != nil {
+			return err
+		}
+
 		return nil
 	},
 }

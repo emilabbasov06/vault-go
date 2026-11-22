@@ -1,25 +1,8 @@
 package config
 
 import (
-	"encoding/json"
 	"fmt"
-	"os"
-	"path/filepath"
 )
-
-func confSetup(mainDir string, repo *Repo) error {
-	data, err := json.Marshal(repo)
-	if err != nil {
-		return fmt.Errorf("coudn't convert struct to json data: %w", err)
-	}
-
-	path := filepath.Join(mainDir, "config.json")
-	if err = os.WriteFile(path, data, 0755); err != nil {
-		return fmt.Errorf("coudn't create 'config.json' file for configuration: %w", err)
-	}
-
-	return nil
-}
 
 func FolderSetup() (*Repo, error) {
 	mainDir, err := GetMainDir()
@@ -32,7 +15,7 @@ func FolderSetup() (*Repo, error) {
 	}
 
 	repo := NewRepo()
-	if err = confSetup(mainDir, repo); err != nil {
+	if err = WriteConf(repo); err != nil {
 		return nil, err
 	}
 
@@ -40,20 +23,9 @@ func FolderSetup() (*Repo, error) {
 }
 
 func GetConf() (string, error) {
-	mainDir, err := GetMainDir()
+	repo, err := ReadConf()
 	if err != nil {
 		return "", err
-	}
-
-	path := filepath.Join(mainDir, "config.json")
-	configData, err := os.ReadFile(path)
-	if err != nil {
-		return "", fmt.Errorf("couldn't read 'config.json': %w", err)
-	}
-
-	repo := NewRepo()
-	if err = json.Unmarshal(configData, repo); err != nil {
-		return "", fmt.Errorf("couldn't conver 'config.json' to real struct object: %w", err)
 	}
 
 	template := `
