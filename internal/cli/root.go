@@ -7,10 +7,9 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:     "vgo",
-	Short:   "short description",
-	Long:    "long description",
-	Version: "1.10.1",
+	Use:   "vgo",
+	Short: "short description",
+	Long:  "long description",
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},

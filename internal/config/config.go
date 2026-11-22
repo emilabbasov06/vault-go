@@ -5,76 +5,64 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"time"
-	"uuid"
 )
 
-type VGORepoInfo struct {
-	Version      string    `json:"version"`
-	RepositoryID string    `json:"repository_id"`
-	CreatedAt    time.Time `json:"created_at"`
-	Location     string    `json:"location"`
-	Status       string    `json:"status"`
-}
-
-var repoInfo = VGORepoInfo{
-	Version:      "1.10.1",
-	RepositoryID: uuid.NewV7().String(),
-	CreatedAt:    time.Now(),
-	Status:       "active",
-}
-
-func configFileSetup(mainDir string) error {
-	config := filepath.Join(mainDir, "config.json")
-	configData, err := json.Marshal(repoInfo)
+func confSetup(mainDir string, repo *Repo) error {
+	data, err := json.Marshal(repo)
 	if err != nil {
-		return err
+		return fmt.Errorf("coudn't convert struct to json data: %w", err)
 	}
 
-	if err = os.WriteFile(config, configData, 0755); err != nil {
-		return err
+	path := filepath.Join(mainDir, "config.json")
+	if err = os.WriteFile(path, data, 0755); err != nil {
+		return fmt.Errorf("coudn't create 'config.json' file for configuration: %w", err)
 	}
 
 	return nil
 }
 
-func BackupFolderSetup() (string, error) {
-	homeDir, err := os.UserHomeDir()
+func FolderSetup() (*Repo, error) {
+	mainDir, err := GetMainDir()
 	if err != nil {
-		return "", fmt.Errorf("failed to get user home directory: %w", err)
+		return nil, err
 	}
 
-	mainDir := filepath.Join(homeDir, "Documents", "VaultGoBackup", ".vaultgo")
-	repoInfo.Location = mainDir
-
-	subDirs := []string{
-		filepath.Join(mainDir, "objects"),
-		filepath.Join(mainDir, "snapshots"),
-		filepath.Join(mainDir, "tmp"),
+	if err = MainSetup(mainDir); err != nil {
+		return nil, err
 	}
 
-	for _, subDir := range subDirs {
-		if err = os.MkdirAll(subDir, 0755); err != nil {
-			return "", fmt.Errorf("failed to create directory: %w", err)
-		}
+	repo := NewRepo()
+	if err = confSetup(mainDir, repo); err != nil {
+		return nil, err
 	}
 
-	if err = configFileSetup(mainDir); err != nil {
-		return "", fmt.Errorf("failed to create 'config.json' file: %w", err)
-	}
-
-	return repoInfo.Version, nil
+	return repo, nil
 }
 
-func GetRepoInfo() string {
+func GetConf() (string, error) {
+	mainDir, err := GetMainDir()
+	if err != nil {
+		return "", err
+	}
+
+	path := filepath.Join(mainDir, "config.json")
+	configData, err := os.ReadFile(path)
+	if err != nil {
+		return "", fmt.Errorf("couldn't read 'config.json': %w", err)
+	}
+
+	repo := NewRepo()
+	if err = json.Unmarshal(configData, repo); err != nil {
+		return "", fmt.Errorf("couldn't conver 'config.json' to real struct object: %w", err)
+	}
+
 	template := `
 VaultGo Backup
 
 Repository ID: %s
 Version:       %s
 Created At:    %s
-Location:      %s
-Status:        %s
+Source:      %s
 `
-	return fmt.Sprintf(template, repoInfo.RepositoryID, repoInfo.Version, repoInfo.CreatedAt, repoInfo.Location, repoInfo.Status)
+	return fmt.Sprintf(template, repo.RepositoryID, repo.Version, repo.CreatedAt, repo.Source), nil
 }

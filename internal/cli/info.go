@@ -12,8 +12,14 @@ var infoCmd = &cobra.Command{
 	Use:   "info",
 	Short: "short description for info",
 	Long:  "long description for info",
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Fprintf(os.Stdout, config.GetRepoInfo())
+	RunE: func(cmd *cobra.Command, args []string) error {
+		info, err := config.GetConf()
+		if err != nil {
+			return err
+		}
+
+		fmt.Fprintf(os.Stdout, "%s", info)
+		return nil
 	},
 }
 

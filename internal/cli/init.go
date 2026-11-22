@@ -11,12 +11,12 @@ var initCmd = &cobra.Command{
 	Short: "short description for init",
 	Long:  "long description for init",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		version, err := config.BackupFolderSetup()
+		repo, err := config.FolderSetup()
 		if err != nil {
 			return err
 		}
 
-		rootCmd.Version = version
+		rootCmd.Version = repo.Version
 		return nil
 	},
 }
