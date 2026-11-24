@@ -2,7 +2,9 @@ package config
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
+	"vault-go/internal/chunker"
 	"vault-go/internal/scanner"
 )
 
@@ -25,7 +27,25 @@ func BackupProcess(bFolder string) error {
 	}
 
 	for _, entry := range entries {
-		fmt.Println(entry)
+		if entry.IsDir {
+			continue
+		}
+
+		file, err := os.Open(entry.Path)
+		if err != nil {
+			return err
+		}
+
+		if err = chunker.ChunkProcess(file, 600*1024, func(chunk *chunker.Chunk) error {
+			fmt.Fprintf(os.Stdout, "file=%s, chunk_size=%d\n", entry.Path, len(chunk.Data))
+			return nil
+		}); err != nil {
+			return err
+		}
+
+		if err = file.Close(); err != nil {
+			return err
+		}
 	}
 
 	return nil

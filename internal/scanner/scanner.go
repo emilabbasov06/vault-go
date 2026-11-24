@@ -19,11 +19,7 @@ func Scan(source string) ([]Entry, error) {
 		}
 
 		entry := NewEntry()
-		entry.Path = path
-		entry.IsDir = d.IsDir()
-		entry.ModTime = info.ModTime()
-		entry.Mode = info.Mode()
-		entry.Size = info.Size()
+		entry.SetEntry(path, d.IsDir(), info.Size(), info.ModTime(), info.Mode())
 
 		entries = append(entries, *entry)
 
