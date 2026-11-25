@@ -2,7 +2,7 @@ package cli
 
 import (
 	"fmt"
-	"vault-go/internal/config"
+	"vault-go/internal/backup"
 
 	"github.com/spf13/cobra"
 )
@@ -17,7 +17,7 @@ var backupCmd = &cobra.Command{
 		}
 
 		bFolder := args[0]
-		if err := config.BackupProcess(bFolder); err != nil {
+		if err := backup.BackupProcess(bFolder); err != nil {
 			return err
 		}
 
